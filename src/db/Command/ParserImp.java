@@ -41,6 +41,9 @@ public class ParserImp implements Parser{
         String command = args[0];
         command = command.toUpperCase();
         switch (command) {
+            case "INFO":
+                //TODO
+                return Status.Exit;
             case "CREATE":
                 return create(args);
             case "DROP":
@@ -92,6 +95,8 @@ public class ParserImp implements Parser{
         return Status.Success;
     }
 
-
-
+    @Override
+    public Status metaData() {
+        return Status.Success;
+    }
 }

@@ -6,4 +6,6 @@ package db.Command;
 public interface Parser {
 
     public Status readLine(String line);
+
+    public Status metaData();
 }
