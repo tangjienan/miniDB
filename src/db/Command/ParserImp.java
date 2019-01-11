@@ -1,4 +1,12 @@
-package Command;
+package db.Command;
+
+
+import db.MetaData;
+import db.Utils.Utils;
+
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by donezio on 1/10/19.
@@ -6,6 +14,15 @@ package Command;
 public class ParserImp implements Parser{
 
     private static ParserImp parserImp;
+
+    private static Set<String> keyWords = new HashSet<String>() {
+        private static final long serialVersionUID = 1031377713931961017L;
+        {
+            add("CREATE");
+            add("*");
+            add("PRIMARY_KEY");
+        }
+    };;
 
     ParserImp() {
 
@@ -25,7 +42,7 @@ public class ParserImp implements Parser{
         command = command.toUpperCase();
         switch (command) {
             case "CREATE":
-                return create();
+                return create(args);
             case "DROP":
                 return drop();
             case "UPDATE":
@@ -36,14 +53,32 @@ public class ParserImp implements Parser{
                 return Status.Exit;
             default:
                 System.out.print("wrong inpit...");
-                return Status.Exit;
+                return Status.Fail;
         }
     }
 
     // CREATE (tableName) (colum1) (colum2) ..... primary_key (column*)
-    public Status create() {
+    public Status create(String[] args) {
+        String tableName = args[1];
+
+        if (keyWords.contains(tableName)) {
+            return Status.Exit;
+        }
+
+        try {
+            if (Utils.containsTable(tableName)) {
+                return Status.Fail;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("createing table");
+        File tablePath = new File(MetaData.dbDirectory() + "/" + tableName);
+        tablePath.mkdir();
         return Status.Success;
     }
+
+
 
     public Status drop(){
         return Status.Success;

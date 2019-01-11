@@ -1,4 +1,4 @@
-package Command;
+package db.Command;
 
 /**
  * Created by donezio on 1/10/19.

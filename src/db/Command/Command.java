@@ -1,4 +1,4 @@
-package Command;
+package db.Command;
 
 import java.util.Scanner;
 
@@ -28,7 +28,6 @@ public class Command {
         while ( run == true ) {
             String line = scanner.nextLine();
             if (line.length() != 0) {
-                System.out.println("hey one line");
                 Status status = parserImp.readLine(line);
                 if (status == Status.Exit) {
                     System.out.println("Bye~");
