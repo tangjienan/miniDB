@@ -13,6 +13,7 @@ public class Main {
             System.out.println(metaData.dbDirectory());
         }
 
+
         Command command = Command.getInstance();
         command.run();
 

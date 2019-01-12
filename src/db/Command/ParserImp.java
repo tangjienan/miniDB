@@ -161,8 +161,8 @@ public class ParserImp implements Parser{
         }
         // Create Table
 
-        DBStatus status = DBStatus.Exit;
-        //DBStatus status = dbOps.getCreate().createTable(tableName);
+        //DBStatus status = DBStatus.Exit;
+        DBStatus status = dbOps.getCreate().createTable(tableName, columnNameSet, autoIncreColumn, primaryKey);
         return status;
     }
 
