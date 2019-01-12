@@ -3,8 +3,9 @@ package db.Command;
 
 import db.MetaData;
 import db.Operations.DBOps;
-import java.util.HashSet;
-import java.util.Set;
+import db.Utils.Utils;
+
+import java.util.*;
 
 /**
  * Created by donezio on 1/10/19.
@@ -21,6 +22,10 @@ public class ParserImp implements Parser{
             add("*");
             add("PRIMARY_KEY");
             add("AUTO_INCREMENT");
+            add("INSERT");
+            add("DROP");
+            add("NULL");
+            add("VALUES");
         }
     };;
     private final DBOps dbOps;
@@ -42,6 +47,8 @@ public class ParserImp implements Parser{
         String[] args = line.split("\\s+");
         String command = args[0];
         switch (command) {
+            case "INSERT":
+                return insert(args);
             case "INFO":
                 //TODO
                 return DBStatus.Exit;
@@ -64,7 +71,10 @@ public class ParserImp implements Parser{
     // Datatype not supported, all store as String.
     // CREATE Table tableName (colum1 column2 column3..... primary_key (column*))
     public DBStatus create(String[] args) {
-
+        if (args.length < 8) {
+            System.out.println("Arguments too short, check input");
+            return DBStatus.Fail;
+        }
         if (!args[1].equals("TABLE")) {
             System.out.println("Incorrect command" + args[1]);
             return DBStatus.Fail;
@@ -178,6 +188,108 @@ public class ParserImp implements Parser{
 
     public DBStatus select() {
         return DBStatus.Success;
+    }
+
+
+
+//    INSERT INTO table_name (column1, column2, column3, ...)
+//    VALUES (value1, value2, value3, ...);  automatically overwrite any values pass to the auto_increment columns
+
+    public DBStatus insert(String[] args) {
+
+        if (args.length < 6) {
+            System.out.println("Arguments too short, check input");
+            return DBStatus.Fail;
+        }
+        if (!args[1].equals("INTO")) {
+            System.out.println("Incorrect command " + args[1]);
+            return DBStatus.Fail;
+        }
+
+        String tableName = args[2];
+
+
+        // TODO: use index to look for key later (HashMap<String, String>)
+        try {
+            if (!dbOps.getUtls().containsTable(tableName)) {
+                System.out.println("Table not exist");
+                return DBStatus.Exit;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return DBStatus.Fail;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 3; i < args.length; i++) {
+            sb.append(' ').append(args[i]);
+        }
+
+        String columnValues = sb.toString().substring(1);
+
+        String[] columnValuesArr = columnValues.split("VALUES");
+
+        if (columnValuesArr.length != 2) {
+            System.out.println("Incorrect command, VALUES not found or too many VALUES");
+            return DBStatus.Fail;
+        }
+
+        if  (columnValuesArr[0].charAt(0) != '(' || columnValuesArr[0].charAt(columnValuesArr[0].length() - 1) != ')' ) {
+            System.out.println("Incorrect command, columns in correct");
+            return DBStatus.Fail;
+        }
+
+        if  (columnValuesArr[1].charAt(0) != '(' || columnValuesArr[1].charAt(columnValuesArr[1].length() - 1) != ')' ) {
+            System.out.println("Incorrect command, values in correct");
+            return DBStatus.Fail;
+        }
+
+        String columnsTmp = columnValuesArr[0].substring(1, columnValuesArr[0].length() - 1);
+        String valuesTmp = columnValuesArr[1].substring(1, columnValuesArr[1].length() - 1);
+
+        String[] columns = columnsTmp.split("//s+");
+        String[] values  = valuesTmp.split("//s+");
+
+        if (values.length != columns.length) {
+            System.out.println("Incorrect command, column number and values number don't match");
+            return DBStatus.Fail;
+        }
+
+        Map<String, List<String>> tableMetaData = Utils.createMapFromFile(MetaData.dbDirectory() + "/" + tableName + "/tableMetaData");
+        if (tableMetaData ==  null) {
+            System.out.println("Fail to conver table metadata file to hashmap");
+            return DBStatus.Fail;
+        }
+
+        String pk = tableMetaData.get("PK").get(0);
+        Map<String, String> columnToValue = new HashMap<>();
+        List<String> columnName = tableMetaData.get("COLUMN");
+        List<String> AI = tableMetaData.get("AI");
+        List<String> AICount = tableMetaData.get("AI_COUNT");
+
+        for (int i = 0; i < columnValuesArr[0].length(); i++ ) {
+            String col = columns[i];
+            String val = values[i];
+            if (!columnName.contains(col)) {
+                System.out.println("Column name not exist");
+                return DBStatus.Fail;
+            }
+
+            if (col.equals(pk)) {
+                if ( dbOps.getUtls().containsKey(val)) {
+                    System.out.println("Keys with value " + val + " already exist");
+                    return DBStatus.Fail;
+                }
+            }
+
+            if (AI.indexOf(col) != -1) {
+                columnToValue.put(col, (Integer.parseInt(AICount.get(AI.indexOf(col))) + 1) + "" );
+            } else {
+                columnToValue.put(col, val);
+            }
+        }
+
+        return  dbOps.getInsert().insertTo(tableName, columnToValue, pk);
     }
 
     @Override

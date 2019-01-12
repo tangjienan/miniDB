@@ -31,7 +31,7 @@ public class Create extends Operations {
         File tablePath = new File(MetaData.dbDirectory() + "/" + tableName);
 
         Map<String, List<String>> map = new HashMap<>();
-
+        Map<String, String> index = new HashMap<>();
 
         List<String> count = new ArrayList<>();
 
@@ -63,12 +63,16 @@ public class Create extends Operations {
         tmp.addAll(columnName);
         map.put("COLUMN", tmp);
 
+
         if (tablePath.mkdir()) {
             Utils.saveMapToLocation(map,MetaData.dbDirectory() + "/" + tableName + "/tableMetaData");
-
-            Map<String, List<String>> m = Utils.createMapFromFile(MetaData.dbDirectory() + "/" + tableName + "/tableMetaData");
-            Utils.printHashMap(m);
-
+            Utils.saveMapToLocation(index,MetaData.dbDirectory() + "/" + tableName + "/tableIndex");
+            if (MetaData.test().equals("TRUE")) {
+                System.out.println("Meta data stored");
+                Map<String, List<String>> m = Utils.createMapFromFile(MetaData.dbDirectory() + "/" + tableName + "/tableMetaData");
+                Utils.printHashMap(m);
+                System.out.println("=================================");
+            }
 
             return DBStatus.Success;
         } else {
@@ -76,5 +80,6 @@ public class Create extends Operations {
             return DBStatus.Fail;
         }
     }
+
 
 }

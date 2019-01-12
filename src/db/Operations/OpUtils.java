@@ -1,8 +1,12 @@
 package db.Operations;
 
+import db.Command.DBStatus;
 import db.MetaData;
+import db.Utils.Utils;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by donezio on 1/11/19.
@@ -50,4 +54,35 @@ public class OpUtils extends Operations {
         return false;
     }
 
+    public boolean containsKey(String tableName) {
+        Map<String, String> index = Utils.createMapFromFile(MetaData.dbDirectory() + "/" + tableName + "/tableIndex");
+        return index.containsKey(tableName);
+    }
+
+    public DBStatus metaTableUpdate(OpsType t, String tableName) {
+        switch (t) {
+            case Insert:
+                break;
+            case Update:
+                break;
+            case Delete:
+                break;
+            default:
+                break;
+        }
+        return DBStatus.Fail;
+    }
+
+
+    private DBStatus insert(String tableName, String pk) {
+        // update index map
+        Map<String, String> index = Utils.createMapFromFile(MetaData.dbDirectory() + "/" + tableName + "/tableIndex");
+        index.put(pk, "");
+        // update meta data
+        Map<String, List<String>> tableMetaData = Utils.createMapFromFile(MetaData.dbDirectory() + "/" + tableName + "/tableMetaData");
+        // update Coubt
+
+        // update auto_increment count
+
+    }
 }

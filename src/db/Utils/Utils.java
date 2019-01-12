@@ -13,7 +13,8 @@ public class Utils {
 
     public static <K,Y> void saveMapToLocation(Map<K,Y> map, String location) {
         try {
-            FileOutputStream fos = new FileOutputStream(location);
+            // overwrite files
+            FileOutputStream fos = new FileOutputStream(location, false);
             ObjectOutputStream oos = new ObjectOutputStream(fos);
             oos.writeObject(map);
             oos.close();
