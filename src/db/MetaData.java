@@ -16,6 +16,7 @@ public class MetaData {
         private static final long serialVersionUID = 1031377763931961017L;
         {
             add("dbDirectory");
+            add("TEST");
         }
     };;
 
@@ -40,6 +41,9 @@ public class MetaData {
                     switch (args[0]) {
                         case "dbDirectory":
                             metaDataMap.put("dbDirectory", args[1]);
+                            break;
+                        case "TEST":
+                            metaDataMap.put("TEST", args[1]);
                             break;
                     }
                 }
@@ -67,5 +71,15 @@ public class MetaData {
             return null;
         }
     }
+
+    public static String test() {
+        if (metaDataMap.containsKey("TEST")) {
+            return  metaDataMap.get("TEST");
+        }
+        else {
+            return null;
+        }
+    }
+
 
 }

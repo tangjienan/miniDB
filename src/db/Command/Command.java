@@ -28,10 +28,12 @@ public class Command {
         while ( run == true ) {
             String line = scanner.nextLine();
             if (line.length() != 0) {
-                Status status = parserImp.readLine(line);
-                if (status == Status.Exit) {
+                DBStatus dBStatus = parserImp.readLine(line);
+                if (dBStatus == DBStatus.Exit) {
                     System.out.println("Bye~");
                     run = false;
+                } else if (dBStatus == DBStatus.Fail) {
+                    System.out.println("Command error, enter it again");
                 }
             }
         }
