@@ -38,7 +38,6 @@ public class OpUtils extends Operations {
         if (directoryListing != null) {
             for (File child : directoryListing) {
                 if (child.getName().equals(tableName)) {
-                    System.out.println("Duplicate table name");
                     return true;
                 }
             }
@@ -54,14 +53,15 @@ public class OpUtils extends Operations {
         return false;
     }
 
-    public boolean containsKey(String tableName) {
+    public boolean containsKey(String tableName, String value) {
         Map<String, String> index = Utils.createMapFromFile(MetaData.dbDirectory() + "/" + tableName + "/tableIndex");
-        return index.containsKey(tableName);
+        return index.containsKey(value);
     }
 
-    public DBStatus metaTableUpdate(OpsType t, String tableName) {
+    public DBStatus metaTableUpdate(OpsType t, String tableName, String pk) {
         switch (t) {
             case Insert:
+                insert(tableName,pk);
                 break;
             case Update:
                 break;
@@ -77,12 +77,24 @@ public class OpUtils extends Operations {
     private DBStatus insert(String tableName, String pk) {
         // update index map
         Map<String, String> index = Utils.createMapFromFile(MetaData.dbDirectory() + "/" + tableName + "/tableIndex");
-        index.put(pk, "");
+        index.put(pk, "pk");
         // update meta data
         Map<String, List<String>> tableMetaData = Utils.createMapFromFile(MetaData.dbDirectory() + "/" + tableName + "/tableMetaData");
         // update Coubt
-
+        List<String> count = tableMetaData.get("COUNT");
+        count.set(0, (Integer.parseInt(count.get(0)) + 1) + "");
         // update auto_increment count
+        List<String> aiCount = tableMetaData.get("AI_COUNT");
+        for (int i = 0; i < aiCount.size(); i++) {
+            count.set(0, (Integer.parseInt(aiCount.get(i)) + 1) + "");
+        }
+        tableMetaData.put("COUNT", count);
+        tableMetaData.put("AI_COUNT", aiCount);
 
+        Utils.saveMapToLocation(tableMetaData, MetaData.dbDirectory() + "/" + tableName + "/tableMetaData");
+        Utils.saveMapToLocation(index, MetaData.dbDirectory() + "/" + tableName + "/tableIndex");
+        return DBStatus.Success;
     }
+
+
 }

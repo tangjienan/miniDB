@@ -26,8 +26,9 @@ public class ParserImp implements Parser{
             add("DROP");
             add("NULL");
             add("VALUES");
+            add("FROM");
         }
-    };;
+    };
     private final DBOps dbOps;
 
     ParserImp(DBOps dbOps) {
@@ -48,18 +49,21 @@ public class ParserImp implements Parser{
         String command = args[0];
         switch (command) {
             case "INSERT":
+                //break;
                 return insert(args);
             case "INFO":
                 //TODO
                 return DBStatus.Exit;
             case "CREATE":
+                System.out.println("Hey this is create");
+                //break;
                 return create(args);
             case "DROP":
                 return drop();
             case "UPDATE":
                 return update();
             case "SELECT":
-                return select();
+                return select(args);
             case "EXIT":
                 return DBStatus.Exit;
             default:
@@ -71,6 +75,7 @@ public class ParserImp implements Parser{
     // Datatype not supported, all store as String.
     // CREATE Table tableName (colum1 column2 column3..... primary_key (column*))
     public DBStatus create(String[] args) {
+        System.out.println("CREATE IS CALLED");
         if (args.length < 8) {
             System.out.println("Arguments too short, check input");
             return DBStatus.Fail;
@@ -186,7 +191,74 @@ public class ParserImp implements Parser{
         return DBStatus.Success;
     }
 
-    public DBStatus select() {
+
+    //SELECT * FROM table_name;
+    //SELECT colimn1, column2 FROM table_name
+
+    public DBStatus select(String[] args) {
+
+        Set<String> whereOps = new HashSet<>();
+        whereOps.add("=");
+        whereOps.add("<");
+        whereOps.add(">");
+
+        int fromIndex = -1;
+        int tableIndex = -1;
+        int whereIndex = -1;
+        int whereColumn = -1;
+        int whereOp  = -1;
+        int whereVal = -1;
+
+
+        for (int i = 1; i < args.length; i++) {
+            if (args[i].equals("FROM")) {
+                if (fromIndex != - 1) {
+                    System.out.println("duplicate from keyword");
+                    return DBStatus.Fail;
+                }
+                fromIndex = i;
+                if ( i != args.length - 1) {
+                    tableIndex = i + 1;
+                } else {
+                    System.out.println("No table name found");
+                    return DBStatus.Fail;
+                }
+            }
+
+            if (args[i].equals("WHERE")) {
+                // after process where i should == args.length - 1, otherwise error
+                if (whereIndex != -1) {
+                    System.out.println("Too many where keyword");
+                    return DBStatus.Fail;
+                }
+                if (i + 3 != args.length - 1) {
+                    System.out.println("Wrong where keyword");
+                    return DBStatus.Fail;
+                }
+                whereIndex = i;
+                whereColumn = i + 1;
+                whereOp = i + 2;
+                whereVal = i + 3;
+                break;
+            }
+
+        }
+
+        if (fromIndex == -1) {
+            System.out.println("keyword FROM missing");
+            return DBStatus.Fail;
+        }
+
+        // check table
+
+        // check column
+
+        // check where
+
+
+        // display
+
+
         return DBStatus.Success;
     }
 
@@ -234,21 +306,24 @@ public class ParserImp implements Parser{
             return DBStatus.Fail;
         }
 
-        if  (columnValuesArr[0].charAt(0) != '(' || columnValuesArr[0].charAt(columnValuesArr[0].length() - 1) != ')' ) {
+        if  (columnValuesArr[0].charAt(0) != '(' ) {
+            System.out.println(columnValuesArr[0]);
             System.out.println("Incorrect command, columns in correct");
             return DBStatus.Fail;
         }
 
-        if  (columnValuesArr[1].charAt(0) != '(' || columnValuesArr[1].charAt(columnValuesArr[1].length() - 1) != ')' ) {
+        if  (columnValuesArr[1].charAt(columnValuesArr[1].length() - 1) != ')' ) {
             System.out.println("Incorrect command, values in correct");
             return DBStatus.Fail;
         }
 
-        String columnsTmp = columnValuesArr[0].substring(1, columnValuesArr[0].length() - 1);
+        String columnsTmp = columnValuesArr[0].substring(1);
         String valuesTmp = columnValuesArr[1].substring(1, columnValuesArr[1].length() - 1);
 
-        String[] columns = columnsTmp.split("//s+");
-        String[] values  = valuesTmp.split("//s+");
+
+        String[] columns = columnsTmp.split("\\s+");
+        String[] values  = valuesTmp.split("\\s+");
+
 
         if (values.length != columns.length) {
             System.out.println("Incorrect command, column number and values number don't match");
@@ -262,12 +337,13 @@ public class ParserImp implements Parser{
         }
 
         String pk = tableMetaData.get("PK").get(0);
+        String pkVal = "";
         Map<String, String> columnToValue = new HashMap<>();
         List<String> columnName = tableMetaData.get("COLUMN");
         List<String> AI = tableMetaData.get("AI");
         List<String> AICount = tableMetaData.get("AI_COUNT");
 
-        for (int i = 0; i < columnValuesArr[0].length(); i++ ) {
+        for (int i = 0; i < columns.length; i++ ) {
             String col = columns[i];
             String val = values[i];
             if (!columnName.contains(col)) {
@@ -276,10 +352,11 @@ public class ParserImp implements Parser{
             }
 
             if (col.equals(pk)) {
-                if ( dbOps.getUtls().containsKey(val)) {
+                if ( dbOps.getUtls().containsKey(tableName,val)) {
                     System.out.println("Keys with value " + val + " already exist");
                     return DBStatus.Fail;
                 }
+                pkVal = val;
             }
 
             if (AI.indexOf(col) != -1) {
@@ -289,7 +366,7 @@ public class ParserImp implements Parser{
             }
         }
 
-        return  dbOps.getInsert().insertTo(tableName, columnToValue, pk);
+        return  dbOps.getInsert().insertTo(tableName, columnToValue, pkVal);
     }
 
     @Override

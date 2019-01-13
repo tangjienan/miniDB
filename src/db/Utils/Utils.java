@@ -53,16 +53,18 @@ public class Utils {
         for (Map.Entry<String, V> e : map.entrySet()) {
             String str = null;
             List<String> list = null;
-            System.out.print(e.getKey() + ":   ");
+            System.out.print("  " + e.getKey() + ":   ");
+            // Check if a String
             try {
                 str = (String) e.getValue();
                 System.out.print(str + " ");
             } catch (Exception exception) {}
 
+            // Check if a List
             try {
                 list = (List<String>) e.getValue();
                 for(String s: list) {
-                    System.out.print(s + " ");
+                    System.out.print("  " + s + " "  );
                 }
             } catch (Exception exception) {}
         }

@@ -32,6 +32,8 @@ public class Create extends Operations {
 
         Map<String, List<String>> map = new HashMap<>();
         Map<String, String> index = new HashMap<>();
+        // insert place holder
+        index.put("PRIMARY_KEY", "PRIMARY_KEY");
 
         List<String> count = new ArrayList<>();
 
@@ -73,7 +75,6 @@ public class Create extends Operations {
                 Utils.printHashMap(m);
                 System.out.println("=================================");
             }
-
             return DBStatus.Success;
         } else {
             System.out.println("Fail in creating table");

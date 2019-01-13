@@ -1,2 +1,5 @@
 dbDirectory:./database
 TEST:TRUE
+
+create table test (a b c primary key a)
+insert into test (a b c values 10 10 10)
