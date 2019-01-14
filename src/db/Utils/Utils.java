@@ -1,6 +1,7 @@
 package db.Utils;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -69,5 +70,89 @@ public class Utils {
             } catch (Exception exception) {}
         }
         System.out.println();
+    }
+
+
+    // left adjust
+    public static List<String> fullJustify(List<String> list, int maxWidth) {
+        // 1 greedily pick words
+        // 2 normal line
+        // 3 last line
+        // 4 padd zero behind
+
+
+
+        String[] words = new String[list.size()];
+        int index = 0;
+        for (String str : list) {
+            words[index++] = str;
+        }
+
+        List<String> res = new ArrayList<>();
+        int curLen = 0;
+        List<String> cur = new ArrayList<>();
+        for (int i = 0; i < words.length; i++) {
+            if (curLen + words[i].length() > maxWidth) {
+                String str = "";
+                if (cur.size() != 1) {
+                    str = normalLine(cur, maxWidth, curLen - 1);
+                }
+                else {
+                    str = lastLine(cur, maxWidth);
+                }
+                res.add(str);
+                cur.clear();
+                curLen = 0;
+            }
+            curLen += words[i].length() + 1;
+            cur.add(words[i]);
+        }
+        String lst = lastLine(cur, maxWidth);
+        res.add(lst);
+        return res;
+    }
+
+
+    private static  String normalLine(List<String> strings, int maxWidth, int curLen) {
+        int totalSpace = maxWidth - curLen + strings.size() - 1;
+        int avgSpace = totalSpace / (strings.size() - 1);
+        int remainder = totalSpace % (strings.size() - 1);
+        StringBuilder sb = new StringBuilder();
+        for (int index = 0; index < strings.size(); index++) {
+            String str = strings.get(index);
+            sb.append(str);
+            if (index != strings.size() - 1) {
+                for (int i = 0; i < avgSpace; i++) {
+                    sb.append(" ");
+                }
+            }
+            if (remainder != 0) {
+                sb.append(" ");
+                remainder -= 1;
+            }
+        }
+        return sb.toString();
+    }
+
+    private static String lastLine(List<String> strings, int maxWidth) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < strings.size(); i++) {
+            String str = strings.get(i);
+            sb.append(str);
+            if (i < strings.size() - 1) {
+                sb.append(" ");
+            }
+        }
+
+        while (sb.length() < maxWidth) {
+            //System.out.println("dsadas");
+            sb.append(" ");
+        }
+        return sb.toString();
+    }
+
+    private static String paddZero(String str, int maxWidth) {
+        return "";
     }
 }

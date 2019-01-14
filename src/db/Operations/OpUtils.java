@@ -14,6 +14,8 @@ import java.util.Map;
 public class OpUtils extends Operations {
     private static OpUtils utils;
 
+    private static int rowLength = 16;
+
     private OpUtils() {
 
     }
@@ -100,18 +102,30 @@ public class OpUtils extends Operations {
     // print table to console
     public void displayTable(List<String> columns, List<List<String>> values, String tableName) {
 
+
+        //List<String> processedColumn = Utils.fullJustify(columns, rowLength);
+
         System.out.println("========================" + tableName + "=========================");
         for (String column : columns) {
-            System.out.print(column + " ");
+            System.out.print(column);
+            for (int i = column.length(); i < rowLength; i++) {
+                System.out.print(" ");
+            }
+            System.out.print("||");
         }
         System.out.println();
         for (List<String> vals : values) {
+            //List<String> processVals = Utils.fullJustify(vals, rowLength);
             for (String val : vals) {
-                System.out.print(val + " ");
+                System.out.print(val);
+                for (int i = val.length(); i < rowLength; i++) {
+                    System.out.print(" ");
+                }
+                System.out.print("||");
             }
             System.out.println();
         }
-        System.out.println("=================================================");
+        System.out.println("=========================================================");
     }
 
 }

@@ -52,18 +52,24 @@ public class Select extends Operations {
                 //Utils.printHashMap(map);
 
                 // process row by row in here
+                boolean canAdd = false;
                 for (String column : columns) {
+                    canAdd = true;
                     if (conditions[0] != null && conditions[0].length() != 0) {
                         int opsVal = Integer.valueOf(conditions[1]);
                         String tmp = map.get(column);
-                        if (tmp.compareTo(conditions[2]) == opsVal) {
-                            row.add(map.get(column));
+                        if (column.equals(conditions[0]) && tmp.compareTo(conditions[2]) == opsVal) {
+                            canAdd = true;
                         }
-                    } else {
-                        row.add(map.get(column));
+                        else {
+                            canAdd = false;
+                        }
                     }
+                    row.add(map.get(column));
                 }
-                values.add(row);
+                if (canAdd) {
+                    values.add(row);
+                }
             }
         } else {
             // Handle the case where dir is not really a directory.
