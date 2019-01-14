@@ -43,25 +43,29 @@ public class Select extends Operations {
 
         if (directoryListing != null) {
 
+            // iterate through each row
             for (File child : directoryListing) {
                 if (child.getName().equals("tableIndex") || child.getName().equals("tableMetaData")) continue;
                 List<String> row = new ArrayList<>();
                 String path = child.getAbsolutePath();
                 Map<String, String> map = Utils.createMapFromFile(path);
-
                 //Utils.printHashMap(map);
-
-                // process row by row in here
-                boolean canAdd = false;
+                // process each column
+                boolean canAdd = true;
                 for (String column : columns) {
-                    canAdd = true;
-                    if (conditions[0] != null && conditions[0].length() != 0) {
+                    if (canAdd == true && conditions[0] != null && conditions[0].length() != 0) {
                         int opsVal = Integer.valueOf(conditions[1]);
                         String tmp = map.get(column);
-                        if (column.equals(conditions[0]) && tmp.compareTo(conditions[2]) == opsVal) {
+                        int compareVal = tmp.compareTo(conditions[2]);
+
+                        if (compareVal > 1) compareVal = 1;
+                        if (compareVal < 0) compareVal = -1;
+
+
+                        if (column.equals(conditions[0]) &&  compareVal == opsVal) {
                             canAdd = true;
                         }
-                        else {
+                        else if (column.equals(conditions[0]) && compareVal != opsVal){
                             canAdd = false;
                         }
                     }
