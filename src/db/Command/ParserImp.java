@@ -55,7 +55,6 @@ public class ParserImp implements Parser{
                 //TODO
                 return DBStatus.Exit;
             case "CREATE":
-                System.out.println("Hey this is create");
                 //break;
                 return create(args);
             case "DROP":
@@ -75,7 +74,6 @@ public class ParserImp implements Parser{
     // Datatype not supported, all store as String.
     // CREATE Table tableName (colum1 column2 column3..... primary_key (column*))
     public DBStatus create(String[] args) {
-        System.out.println("CREATE IS CALLED");
         if (args.length < 8) {
             System.out.println("Arguments too short, check input");
             return DBStatus.Fail;
@@ -250,19 +248,92 @@ public class ParserImp implements Parser{
         }
 
         // check table
-
+        try {
+            if (!dbOps.getUtls().containsTable(args[tableIndex])) {
+                System.out.println("table " + args[tableIndex] + " not exist");
+                return DBStatus.Fail;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String tableName = args[tableIndex];
         // check column
+        Map<String, List<String>> tableMetaData = Utils.createMapFromFile(MetaData.dbDirectory() + "/" + tableName + "/tableMetaData");
+        if (tableMetaData ==  null) {
+            System.out.println("Fail to conver table metadata file to hashmap");
+            return DBStatus.Fail;
+        }
+        List<String> columnName = tableMetaData.get("COLUMN");
+        List<String> columnToDisplay = new ArrayList<>();
+        Set<String> set  = new HashSet<>(columnName);
 
+        if (whereColumn != -1) {
+            if (!set.contains(args[whereColumn])) {
+                System.out.println("column in Where keyWord not exist");
+                return DBStatus.Fail;
+            }
+            if (!whereOps.contains(args[whereOp])) {
+                System.out.println("Wrong operation in where command");
+                return DBStatus.Fail;
+            }
+        }
+
+        boolean start = false;
+        for (int i = 1; i < fromIndex; i++) {
+            if (args[i].equals("*")) {
+                if (fromIndex != 2) {
+                    System.out.println("* keyWord fail");
+                    return DBStatus.Fail;
+                }
+                columnToDisplay.addAll(set);
+                break;
+            }
+            if (set.contains(args[i])) {
+                columnToDisplay.add(args[i]);
+                set.remove(args[i]);
+            } else {
+                System.out.println("Wrong column name");
+                return DBStatus.Fail;
+            }
+        }
+        String[] whereArr = new String[3];
         // check where
+        if (whereIndex != -1) {
+            whereArr[0] = args[whereColumn];
+            whereArr[1] = args[whereOp];
+            switch (args[whereOp]) {
+                case "=" :
+                    whereArr[1] = "0";
+                    break;
+                case ">" :
+                    whereArr[1] = "1";
+                    break;
+                case "<" :
+                    whereArr[1] = "-1";
+                    break;
+                default:
+                    whereArr[1] = "0";
+                    break;
+            }
 
-
+            whereArr[2] = args[whereVal];
+        }
         // display
-
-
+        try {
+            dbOps.getSelect().selectTableColumn(tableName, columnToDisplay, whereArr);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return DBStatus.Fail;
+        }
+        if (MetaData.test().equals("TRUE")) {
+            System.out.println("=========================");
+            System.out.println("column to display");
+            columnToDisplay.stream().forEach(System.out::println);
+            System.out.println("table Name " + tableName + "  where statrment " + Arrays.toString(whereArr));
+            System.out.println("=========================");
+        }
         return DBStatus.Success;
     }
-
-
 
 //    INSERT INTO table_name (column1, column2, column3, ...)
 //    VALUES (value1, value2, value3, ...);  automatically overwrite any values pass to the auto_increment columns
@@ -285,7 +356,7 @@ public class ParserImp implements Parser{
         try {
             if (!dbOps.getUtls().containsTable(tableName)) {
                 System.out.println("Table not exist");
-                return DBStatus.Exit;
+                return DBStatus.Fail;
             }
         } catch (Exception e) {
             e.printStackTrace();

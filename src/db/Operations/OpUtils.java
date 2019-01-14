@@ -97,4 +97,21 @@ public class OpUtils extends Operations {
     }
 
 
+    // print table to console
+    public void displayTable(List<String> columns, List<List<String>> values, String tableName) {
+
+        System.out.println("========================" + tableName + "=========================");
+        for (String column : columns) {
+            System.out.print(column + " ");
+        }
+        System.out.println();
+        for (List<String> vals : values) {
+            for (String val : vals) {
+                System.out.print(val + " ");
+            }
+            System.out.println();
+        }
+        System.out.println("=================================================");
+    }
+
 }
